@@ -72,6 +72,10 @@ public class SimulationModel {
         this.carrierFemales = (int) ( this.females * (femaleCarrierPercentage / 100.0));
     }
 
+    /**
+     * Simulates the next generation of the current population by simulating reproduction for each
+     * couple and the inheritance of the colorblindness trait, then updating the statistics
+     */
     public void nextGeneration(){
         this.generation++;
         int newMales = 0, newFemales = 0, newColorblindMales = 0, newColorblindFemales = 0, newCarrierFemales = 0;
@@ -108,26 +112,36 @@ public class SimulationModel {
         this.colorblindMales = newColorblindMales;
         this.colorblindFemales = newColorblindFemales;
         this.carrierFemales = newCarrierFemales;
+        this.populationSize = this.males + this.females;
+        notifyObservers();
     }
 
+    /**
+     * Helper function for nextGeneration, simulates reproduction for a single couple
+     * @param maleColorblind Whether the male parent is colorblind
+     * @param femaleColorblind Whether the female parent is colorblind
+     * @param femaleCarrier Whether the female parent is a carrier
+     * @return Int array containing the amount of male children, amount of female children, amount of colorblind
+     *         males, amount of colorblind females, and amount of carrier females
+     */
     public int[] reproduce(boolean maleColorblind, boolean femaleColorblind, boolean femaleCarrier){
         int[] stats = new int[5];
         int newMales = 0, newFemales = 0, newColorblindMales = 0, newColorblindFemales = 0, newCarrierFemales = 0;
         int numChildren;
         // Random seed to determine number of children, loosely based on real statistics
         double randomSeed = Math.random();
-        if (randomSeed < 0.15) {
-            numChildren = 0;
-        } else if (randomSeed < 0.35) {
-            numChildren = 1;
-        } else if (randomSeed < 0.70) {
-            numChildren = 2;
+        if (randomSeed < 0.10) {
+            numChildren = 0; // 10% chance of no children
+        } else if (randomSeed < 0.30) {
+            numChildren = 1; // 20% chance of 1 child
+        } else if (randomSeed < 0.65) {
+            numChildren = 2; // 35% chance of 2 children
         } else if (randomSeed < 0.9) {
-            numChildren = 3;
+            numChildren = 3; // 25% chance of 3 children
         } else if (randomSeed < 0.95){
-            numChildren = 4;
+            numChildren = 4; // 5% chance of 4 children
         } else {
-            numChildren = 5;
+            numChildren = 5; // 5% chance of 5 children (5+ not represented for simplicity)
         }
         for (int i = 0; i < numChildren; i++){
             // Random seed to determine gender (50/50)
@@ -150,7 +164,7 @@ public class SimulationModel {
                     colorblind = Math.random() < 0.5;
                     carrier = !colorblind; // Male is colorblind, female is carrier (50% colorblind, 50% carrier)
                 } else if (maleColorblind){
-                    carrier = Math.random() < 0.5; // Male is colorblind, female is not (50% carrier)
+                    carrier = true; // Male is colorblind, female is not (100% carrier)
                 } else if (femaleColorblind){
                     carrier = true; // Female is colorblind, male is not (100% carrier)
                 } else if (femaleCarrier){

@@ -99,7 +99,7 @@ public class SimulationPTUI implements Observer<SimulationModel> {
             System.out.print("Type 0 to continue to next generation or -1 to exit: ");
             x = in.nextInt();
             if (x == 0) {
-                System.out.println("Placeholder");
+                model.nextGeneration();
             }
         }
     }
