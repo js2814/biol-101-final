@@ -10,7 +10,7 @@ import java.util.Scanner;
  * @author Justin Shen - js2814@rit.edu
  */
 public class SimulationPTUI implements Observer<SimulationModel> {
-    private SimulationModel model;
+    private final SimulationModel model;
     /** Real-life statistics are used for the default values */
     private static final double DEFAULT_MALE_COLORBLIND = 8.0;
     private static final double DEFAULT_FEMALE_COLORBLIND = 0.5;
@@ -93,6 +93,15 @@ public class SimulationPTUI implements Observer<SimulationModel> {
         model.setColorblind(maleColorBlindPercentage, femaleColorBlindPercentage, femaleCarrierPercentage);
         // Generation 0
         this.update(model);
+        // Generation 1+ (main loop)
+        int x = 1;
+        while (x != -1){
+            System.out.print("Type 0 to continue to next generation or -1 to exit: ");
+            x = in.nextInt();
+            if (x == 0) {
+                System.out.println("Placeholder");
+            }
+        }
     }
 
     /**

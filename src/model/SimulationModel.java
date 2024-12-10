@@ -9,7 +9,7 @@ import java.util.List;
  * @author Justin Shen - js2814@rit.edu
  */
 public class SimulationModel {
-    private List<Observer<SimulationModel>> observers; // observers of the model
+    private final List<Observer<SimulationModel>> observers; // observers of the model
     private int populationSize; // current size of the population
     private int generation; // current generation (initial = 0)
     private int males; // number of males in the population
@@ -72,6 +72,114 @@ public class SimulationModel {
         this.carrierFemales = (int) ( this.females * (femaleCarrierPercentage / 100.0));
     }
 
+    public void nextGeneration(){
+        this.generation++;
+        int newMales = 0, newFemales = 0, newColorblindMales = 0, newColorblindFemales = 0, newCarrierFemales = 0;
+
+        // Continue until no pairs left
+        while (this.males > 0 && this.females > 0){
+            boolean maleColorblind = false, femaleColorblind = false, femaleCarrier = false;
+            // Determine whether male parent is colorblind
+            if (Math.random() < (double) this.colorblindMales / this.males){
+                maleColorblind = true;
+                this.colorblindMales--;
+            }
+            this.males--;
+            // Determine whether female parent is colorblind and/or carrier
+            if (Math.random() < (double) this.colorblindFemales / this.females){
+                femaleColorblind = true;
+                this.colorblindFemales--;
+            } else if (Math.random() < (double) this.carrierFemales / (this.females - this.colorblindFemales)){
+                femaleCarrier = true;
+                this.carrierFemales--;
+            }
+            this.females--;
+            int[] stats = reproduce(maleColorblind, femaleColorblind, femaleCarrier);
+            newMales += stats[0];
+            newFemales += stats[1];
+            newColorblindMales += stats[2];
+            newColorblindFemales += stats[3];
+            newCarrierFemales += stats[4];
+        }
+
+        // Update simulation stats
+        this.males = newMales;
+        this.females = newFemales;
+        this.colorblindMales = newColorblindMales;
+        this.colorblindFemales = newColorblindFemales;
+        this.carrierFemales = newCarrierFemales;
+    }
+
+    public int[] reproduce(boolean maleColorblind, boolean femaleColorblind, boolean femaleCarrier){
+        int[] stats = new int[5];
+        int newMales = 0, newFemales = 0, newColorblindMales = 0, newColorblindFemales = 0, newCarrierFemales = 0;
+        int numChildren;
+        // Random seed to determine number of children, loosely based on real statistics
+        double randomSeed = Math.random();
+        if (randomSeed < 0.15) {
+            numChildren = 0;
+        } else if (randomSeed < 0.35) {
+            numChildren = 1;
+        } else if (randomSeed < 0.70) {
+            numChildren = 2;
+        } else if (randomSeed < 0.9) {
+            numChildren = 3;
+        } else if (randomSeed < 0.95){
+            numChildren = 4;
+        } else {
+            numChildren = 5;
+        }
+        for (int i = 0; i < numChildren; i++){
+            // Random seed to determine gender (50/50)
+            boolean male = Math.random() < 0.5;
+            boolean colorblind = false, carrier = false;
+            if (male) { // child is male
+                if (maleColorblind && femaleColorblind) {
+                    colorblind = true; // Both parents are colorblind (100% colorblind)
+                } else if (maleColorblind && femaleCarrier){
+                    colorblind = Math.random() < 0.5; // Male is colorblind, female is carrier (50% colorblind)
+                } else if (femaleColorblind){
+                    colorblind = true; // Female is colorblind, male is not (100% colorblind)
+                } else if (femaleCarrier){
+                    colorblind = Math.random() < 0.5; // Female is carrier, male is not (50% colorblind)
+                }
+            } else { // child is female
+                if (maleColorblind && femaleColorblind) {
+                    colorblind = true; // Both parents are colorblind (100% colorblind)
+                } else if (maleColorblind && femaleCarrier){
+                    colorblind = Math.random() < 0.5;
+                    carrier = !colorblind; // Male is colorblind, female is carrier (50% colorblind, 50% carrier)
+                } else if (maleColorblind){
+                    carrier = Math.random() < 0.5; // Male is colorblind, female is not (50% carrier)
+                } else if (femaleColorblind){
+                    carrier = true; // Female is colorblind, male is not (100% carrier)
+                } else if (femaleCarrier){
+                    carrier = Math.random() < 0.5; // Female is colorblind, male is not (50% carrier)
+                }
+            }
+            // Increment stats by the result
+            if (male) {
+                if (colorblind) {
+                    newColorblindMales++;
+                }
+                newMales++;
+            } else {
+                if (colorblind) {
+                    newColorblindFemales++;
+                } else if (carrier) {
+                    newCarrierFemales++;
+                }
+                newFemales++;
+            }
+        }
+        stats[0] = newMales;
+        stats[1] = newFemales;
+        stats[2] = newColorblindMales;
+        stats[3] = newColorblindFemales;
+        stats[4] = newCarrierFemales;
+        return stats;
+    }
+
     /**
      * toString of the model for the PTUI, prints basic data
      */
@@ -92,7 +200,7 @@ public class SimulationModel {
         result += "\n" + this.colorblindFemales + " females are colorblind (" + String.format("%.2f", (double)
                 this.colorblindFemales / this.females * 100) + "% of total females)"; // Colorblind Females
         result += "\n" + this.carrierFemales + " females are carriers (" + String.format("%.2f", (double)
-                this.carrierFemales / this.females * 100) + "% of total females)"; // Colorblind Females
+                this.carrierFemales / this.females * 100) + "% of total females)"; // Carrier Females
         return result;
     }
 }
