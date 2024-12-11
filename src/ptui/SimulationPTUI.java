@@ -13,7 +13,7 @@ public class SimulationPTUI implements Observer<SimulationModel> {
     private final SimulationModel model;
     /** Real-life statistics are used for the default values */
     private static final double DEFAULT_MALE_COLORBLIND = 8.0;
-    private static final double DEFAULT_FEMALE_COLORBLIND = 0.5;
+    private static final double DEFAULT_FEMALE_COLORBLIND = 0.4;
     private static final double DEFAULT_FEMALE_CARRIER = 15.0;
 
     /**
